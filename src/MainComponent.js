@@ -1,260 +1,169 @@
 import { useEffect, useState } from 'react';
 import './styles.css';
 
+const API_KEY = '1c8d05d67fdcc727528ab1a50240d82b';
+
 function App() {
-  const [movies, setMovies] = useState([]);
-  const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [error, setError] = useState('');
-  const [selectedMovie, setSelectedMovie] = useState(null);
-  const [categories, setCategories] = useState([]); // Nuevo estado para categorías
-  const [selectedCategory, setSelectedCategory] = useState(''); // Nuevo estado para categoría seleccionada
-  const [users, setUsers] = useState([]); // Estado para usuarios
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: ''
+  const [state, setState] = useState({
+    movies: [],
+    query: '',
+    page: 1,
+    totalPages: 0,
+    error: '',
+    loading: true,
+    selectedMovie: null,
+    categories: [],
+    selectedCategory: '',
+    users: [],
+    loggedInUser: null,
+    showRegister: false,
+    showLogin: false,
+    formData: { name: '', email: '', password: '' },
+    formError: ''
   });
-  const [formError, setFormError] = useState('');
-  const [showRegister, setShowRegister] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
-  const [loggedInUser, setLoggedInUser] = useState(null);
 
-  // Cargar las categorías
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const apiKey = '1c8d05d67fdcc727528ab1a50240d82b';
-        const response = await fetch(
-          `https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}`
-        );
-        if (!response.ok) {
-          throw new Error('Error al obtener las categorías');
-        }
-        const data = await response.json();
-        setCategories(data.genres);
-      } catch (error) {
-        console.error(error);
-      }
+  const {
+    movies, query, page, totalPages, error, loading,
+    selectedMovie, categories, selectedCategory, users,
+    loggedInUser, showRegister, showLogin, formData, formError
+  } = state;
+
+  const updateState = (changes) => setState(prev => ({ ...prev, ...changes }));
+
+  const fetchData = async (url, key) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Error en la solicitud');
+      const data = await response.json();
+      return data[key];
+    } catch (err) {
+      console.error(err);
+      throw err;
     }
+  };
 
-    fetchCategories();
+  useEffect(() => {
+    fetchData(`https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}`, 'genres')
+      .then(genres => updateState({ categories: genres }))
+      .catch(() => {});
   }, []);
 
-  // Obtener las películas
   useEffect(() => {
-    async function fetchMovies() {
-      setLoading(true);
-      setError('');
-      
+    const fetchMovies = async () => {
+      updateState({ loading: true, error: '' });
+      let url = `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${page}`;
+
+      if (selectedCategory)
+        url = `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_genres=${selectedCategory}&page=${page}`;
+      if (query)
+        url = `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${query}&page=${page}`;
+
       try {
-        let response;
-        const apiKey = '1c8d05d67fdcc727528ab1a50240d82b';
-
-        let url = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&page=${page}`;
-        
-        // Si hay una categoría seleccionada, se filtra por ella
-        if (selectedCategory) {
-          url = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${selectedCategory}&page=${page}`;
-        }
-        
-        // Si hay una búsqueda, se realiza el filtro por query
-        if (query) {
-          url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${query}&page=${page}`;
-        }
-
-        response = await fetch(url);
-        if (!response.ok) {
-          throw new Error('Error al obtener las películas');
-        }
-
-        const data = await response.json();
-        if (data.results.length === 0) {
-          setError('No se encontraron películas.');
-        }
-        setMovies(data.results);
-        setTotalPages(data.total_pages);
-      } catch (error) {
-        setError('Ocurrió un error al obtener las películas.');
+        const data = await fetchData(url, 'results');
+        updateState({ movies: data, totalPages: data.total_pages || 1 });
+        if (!data.length) updateState({ error: 'No se encontraron películas.' });
+      } catch {
+        updateState({ error: 'Ocurrió un error al obtener las películas.' });
       } finally {
-        setLoading(false);
+        updateState({ loading: false });
       }
-    }
+    };
 
     fetchMovies();
-  }, [query, page, selectedCategory]); // Dependiendo de la categoría seleccionada, se realiza una nueva búsqueda
+  }, [query, page, selectedCategory]);
 
-  const handleCategoryChange = (event) => {
-    setSelectedCategory(event.target.value); // Actualiza la categoría seleccionada
-    setPage(1); // Resetear la página al primer resultado cuando se cambia de categoría
-  };
-
-  const handleSearch = (event) => {
-    setQuery(event.target.value);
-    setPage(1);
-  };
-
-  const handleMovieClick = (movie) => {
-    setSelectedMovie(movie);
-  };
-
-  const handleCloseDetails = () => {
-    setSelectedMovie(null);
-  };
-
-  const handleFormChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    updateState({ formData: { ...formData, [name]: value } });
   };
 
   const handleRegister = () => {
     if (!formData.name || !formData.email || !formData.password) {
-      setFormError('Todos los campos son requeridos.');
+      updateState({ formError: 'Todos los campos son requeridos.' });
       return;
     }
-
-    const existingUser = users.find(user => user.email === formData.email);
-    if (existingUser) {
-      setFormError('Este correo ya está registrado.');
+    if (users.some(user => user.email === formData.email)) {
+      updateState({ formError: 'Este correo ya está registrado.' });
       return;
     }
-
-    setUsers([...users, formData]);
-    setFormData({ name: '', email: '', password: '' });
-    setFormError('');
+    updateState({
+      users: [...users, formData],
+      loggedInUser: formData.name,
+      formData: { name: '', email: '', password: '' },
+      formError: '',
+      showRegister: false,
+      showLogin: false
+    });
     alert('Usuario registrado con éxito.');
-    setLoggedInUser(formData.name); // Loguear automáticamente después del registro
-    setShowRegister(false);
-    setShowLogin(false); // Cerrar ambos formularios después de registrarse
   };
 
   const handleLogin = () => {
-    const existingUser = users.find(user => user.email === formData.email && user.password === formData.password);
-    if (!existingUser) {
-      setFormError('Correo o contraseña incorrectos.');
+    const user = users.find(u => u.email === formData.email && u.password === formData.password);
+    if (!user) {
+      updateState({ formError: 'Correo o contraseña incorrectos.' });
       return;
     }
-
-    setLoggedInUser(existingUser.name); // Establecer el nombre del usuario logueado
-    setFormData({ name: '', email: '', password: '' });
-    setFormError('');
-    setShowLogin(false); // Cerrar el formulario de login
+    updateState({
+      loggedInUser: user.name,
+      formData: { name: '', email: '', password: '' },
+      formError: '',
+      showLogin: false
+    });
   };
 
   return (
     <div>
-      <div className="navbar">
+      <nav className="navbar">
         <h1>NESFLIX</h1>
-        <input
-          type="text"
-          placeholder="Buscar películas..."
-          value={query}
-          onChange={handleSearch}
-        />
-        <select onChange={handleCategoryChange} value={selectedCategory}>
-          <option value="">Filtrar por Categoria</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
+        <input type="text" placeholder="Buscar..." value={query} onChange={(e) => updateState({ query: e.target.value, page: 1 })} />
+        <select value={selectedCategory} onChange={(e) => updateState({ selectedCategory: e.target.value, page: 1 })}>
+          <option value="">Categorías</option>
+          {categories.map(cat => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>
         {loggedInUser ? (
           <div className="user-info">
-            <span>¡Hola! , {loggedInUser}</span>
-            <button onClick={() => setLoggedInUser(null)}>Cerrar sesión</button>
+            <span>Hola, {loggedInUser}</span>
+            <button onClick={() => updateState({ loggedInUser: null })}>Cerrar sesión</button>
           </div>
         ) : (
-          <div>
-            <button className="login-button" onClick={() => { setShowRegister(false); setShowLogin(true); }}>
-              Iniciar sesión
-            </button>
-          </div>
+          <button onClick={() => updateState({ showLogin: true, showRegister: false })}>Iniciar sesión</button>
         )}
-      </div>
+      </nav>
 
       {showRegister && (
-        <div className="register-form">
-          <button className="close-register" onClick={() => setShowRegister(false)}>
-            X
-          </button>
-          <h2>Registro de Usuario</h2>
+        <div className="form-container">
+          <button onClick={() => updateState({ showRegister: false })}>X</button>
+          <h2>Registro</h2>
           {formError && <div className="form-error">{formError}</div>}
-          <input
-            type="text"
-            name="name"
-            placeholder="Nombre"
-            value={formData.name}
-            onChange={handleFormChange}
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Correo electrónico"
-            value={formData.email}
-            onChange={handleFormChange}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Contraseña"
-            value={formData.password}
-            onChange={handleFormChange}
-          />
+          <input type="text" name="name" placeholder="Nombre" value={formData.name} onChange={handleChange} />
+          <input type="email" name="email" placeholder="Correo" value={formData.email} onChange={handleChange} />
+          <input type="password" name="password" placeholder="Contraseña" value={formData.password} onChange={handleChange} />
           <button onClick={handleRegister}>Registrar</button>
-          <p>
-            ¿Ya tienes una cuenta? <button onClick={() => { setShowRegister(false); setShowLogin(true); }}>Iniciar sesión</button>
-          </p>
+          <p>¿Ya tienes cuenta? <button onClick={() => updateState({ showLogin: true, showRegister: false })}>Iniciar sesión</button></p>
         </div>
       )}
 
       {showLogin && (
-        <div className="login-form">
-          <button className="close-login" onClick={() => setShowLogin(false)}>
-            X
-          </button>
-          <h2>Iniciar Sesión</h2>
+        <div className="form-container">
+          <button onClick={() => updateState({ showLogin: false })}>X</button>
+          <h2>Login</h2>
           {formError && <div className="form-error">{formError}</div>}
-          <input
-            type="email"
-            name="email"
-            placeholder="Correo electrónico"
-            value={formData.email}
-            onChange={handleFormChange}
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Contraseña"
-            value={formData.password}
-            onChange={handleFormChange}
-          />
-          <button onClick={handleLogin}>Iniciar sesión</button>
-          <p>
-            ¿No tienes una cuenta? <button onClick={() => { setShowLogin(false); setShowRegister(true); }}>Crear cuenta</button>
-          </p>
+          <input type="email" name="email" placeholder="Correo" value={formData.email} onChange={handleChange} />
+          <input type="password" name="password" placeholder="Contraseña" value={formData.password} onChange={handleChange} />
+          <button onClick={handleLogin}>Entrar</button>
+          <p>¿No tienes cuenta? <button onClick={() => updateState({ showRegister: true, showLogin: false })}>Crear cuenta</button></p>
         </div>
       )}
 
       {loading && <div className="loading">Cargando...</div>}
-      {error && <div className="no-results">{error}</div>}
+      {error && <div className="error">{error}</div>}
 
       <div className="container">
-        {movies.map((movie) => (
-          <div
-            key={movie.id}
-            className="movie-card"
-            onClick={() => handleMovieClick(movie)}
-          >
-            <img
-              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-              alt={movie.title}
-            />
+        {movies.map(movie => (
+          <div key={movie.id} className="movie-card" onClick={() => updateState({ selectedMovie: movie })}>
+            <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} alt={movie.title} />
             <h3>{movie.title}</h3>
           </div>
         ))}
@@ -262,34 +171,19 @@ function App() {
 
       {selectedMovie && (
         <div className="movie-details">
-          <button className="close-details" onClick={handleCloseDetails}>
-            X
-          </button>
+          <button onClick={() => updateState({ selectedMovie: null })}>X</button>
           <h2>{selectedMovie.title}</h2>
           <p>{selectedMovie.overview}</p>
-          <p><strong>Fecha de lanzamiento:</strong> {selectedMovie.release_date}</p>
-          <p><strong>Voto Promedio:</strong> {selectedMovie.vote_average}</p>
-          <img
-            src={`https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`}
-            alt={selectedMovie.title}
-          />
+          <p><strong>Fecha de estreno:</strong> {selectedMovie.release_date}</p>
+          <p><strong>Voto promedio:</strong> {selectedMovie.vote_average}</p>
+          <img src={`https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`} alt={selectedMovie.title} />
         </div>
       )}
 
       <div className="pagination">
-        <button
-          onClick={() => setPage(page - 1)}
-          disabled={page === 1}
-        >
-          Anterior
-        </button>
+        <button onClick={() => updateState({ page: page - 1 })} disabled={page === 1}>Anterior</button>
         <span>{`Página ${page} de ${totalPages}`}</span>
-        <button
-          onClick={() => setPage(page + 1)}
-          disabled={page === totalPages}
-        >
-          Siguiente
-        </button>
+        <button onClick={() => updateState({ page: page + 1 })} disabled={page === totalPages}>Siguiente</button>
       </div>
     </div>
   );
