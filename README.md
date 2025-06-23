@@ -1,70 +1,70 @@
-# Getting Started with Create React App
+# 🎬 NESFLIX – Clon de Netflix con React
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+**NESFLIX** es una aplicación web inspirada en Netflix, creada con **React** y la API de **The Movie Database (TMDb)**. Permite buscar, filtrar y explorar películas, además de ver sus trailers directamente desde YouTube. El diseño es 100% **responsive**, ideal para escritorio, tablets y móviles.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🚀 Tecnologías
 
-### `npm start`
+- **React**  
+- **CSS** personalizado  
+- **API TMDb** para datos de películas y trailers  
+- **npm** para gestión de paquetes  
+- **Variables de entorno** (`.env`) para proteger la API key  
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🛠️ Características
 
-### `npm test`
+- 🔍 **Búsqueda** de películas por título  
+- 🎭 **Filtrado** por género  
+- 🎞️ **Detalles** de película: sinopsis, fecha, rating  
+- ▶️ **Reproductor de trailers** (YouTube)  
+- 👥 **Simulación** de registro e inicio de sesión  
+- 📱 **Responsive**: adaptada a dispositivos móviles  
+- 🧭 **Navbar inteligente**: oculta al hacer scroll hacia abajo y aparece al subir  
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 🔐 Configuración de la API Key
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. En la raíz del proyecto, crea un archivo `.env`:
+   En la consola con el comando "touch .env" o se puede crear manualmente.
+2. Dentro de .env, añade tu clave TMDb (reemplaza con tu propia clave):
+   REACT_APP_TMDB_API_KEY=TU_API_KEY_TMDB
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3. Añade .env a tu .gitignore:
+    # Variables de entorno
+    .env
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🧑‍💻 Instalación y ejecución
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# 1. Clona el repositorio
+git clone https://github.com/tu-usuario/nesflix.git
+cd nesflix
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# 2. Instala dependencias
+npm install
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+# 3. Ejecuta en modo desarrollo
+npm start
+Abre http://localhost:3000 en tu navegador.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+## 📦 Build para producción
+npm run build
+Esto generará una versión optimizada en la carpeta build/.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+📸 Captura de pantalla
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+🤝 Créditos
+Datos e imágenes: TMDb
 
-### Code Splitting
+Desarrolladora: DestinyCisternas.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+📄 Licencia
+Este proyecto está bajo la licencia MIT.
+© 2025 NESFLIX – Todos los derechos reservados.
