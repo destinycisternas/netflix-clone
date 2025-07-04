@@ -25,8 +25,7 @@ function App() {
   const [showNavbar, setShowNavbar] = useState(true); // Mostrar u ocultar navbar al hacer scroll
   const [lastScrollY, setLastScrollY] = useState(0); // Última posición del scroll
 
-  const apiKey = process.env.REACT_APP_TMDB_API_KEY;
-
+  const apiKey = import.meta.env.VITE_TMDB_API_KEY;
 
   // Manejar scroll para mostrar u ocultar la barra de navegación
   useEffect(() => {
